@@ -1,5 +1,51 @@
 # Big Data Project: MapReduce, Hive, and Apache Airflow
 
+## Business Context and Objective
+
+This project focuses on analyzing movie industry data extracted from IMDb. It involves two main datasets:
+
+- **Datasource1**: Contains information about people involved in films, with fields such as:
+    - `tconst` – movie identifier
+    - `ordering` – person's sequence number in a movie
+    - `nconst` – person identifier
+    - `role` – role (e.g., actor, actress, self)
+    - `job` – job title (if applicable)
+    - `characters` – character names (if applicable)
+
+- **Datasource4**: Contains detailed person information, including:
+    - `nconst` – person identifier
+    - `primaryName` – person's full name
+    - `birthYear`, `deathYear` – birth and death years
+    - `primaryProfession` – main professions (e.g., actor, director)
+    - `knownForTitles` – identifiers of movies the person is known for
+
+### Project Goal
+
+The project aims to determine:
+- For each person: the number of films they have acted in and directed, based on **Datasource1**.
+- Identify:
+    - The top three actors (based on the number of movies they acted in).
+    - The top three directors (based on the number of movies they directed).
+
+Using **MapReduce**, we first aggregate per-person counts of acting and directing activities.
+
+Using **Hive**, we then enrich this data by joining it with **Datasource4**, and select the individuals with the highest activity in each profession.
+
+The final output contains:
+- `primaryName` – name of the actor or director,
+- `role` – whether they are an actor or director,
+- `movies` – the number of movies associated with them.
+
+This structured output provides insights into the most prolific individuals in the movie industry based on their roles.
+
+## Technical Approach
+The objective of this project was to practically apply core Big Data processing platforms to real-world datasets. The work involved:
+- **Processing one dataset using MapReduce (Hadoop Streaming)**: Filtering and aggregating data through programs written in Go.
+- **Analyzing and integrating data using Hive**: Joining the processed dataset with a second dataset, followed by additional aggregation, sorting, and filtering.
+- **Automating the workflow with Apache Airflow**: Building a DAG to orchestrate the entire process on a Google Cloud Platform (GCP) environment.
+
+The final result is a fully processed and integrated dataset exported in JSON format.
+
 ## Overview
 This project demonstrates the application of Big Data technologies for processing and analyzing datasets. The workflow includes:
 1. A **MapReduce** implementation (Hadoop Streaming) written in Go, which can be tested locally using Linux or Docker.
@@ -8,18 +54,18 @@ This project demonstrates the application of Big Data technologies for processin
 
 ## Project Structure
 - **data/** - Directory containing input and output data.
-  - `input/` - Input datasets required for processing.
-  - `output/` - Stores the results of data processing.
+    - `input/` - Input datasets required for processing.
+    - `output/` - Stores the results of data processing.
 - **src/** - Source code directory.
-  - `mapreduce/` - MapReduce implementation in Go.
-    - `mapper.go` - Mapper logic for Hadoop Streaming.
-    - `combiner.go` - Combiner logic for optimizing intermediate data.
-    - `reducer.go` - Reducer logic for final aggregation.
-  - `hive/` - Hive script for processing MapReduce outputs and integrating with additional datasets.
-    - `query.hql` - Hive query designed for GCP-based clusters.
-  - `airflow/` - Apache Airflow DAG to automate workflow execution.
+    - `mapreduce/` - MapReduce implementation in Go.
+        - `mapper.go` - Mapper logic for Hadoop Streaming.
+        - `combiner.go` - Combiner logic for optimizing intermediate data.
+        - `reducer.go` - Reducer logic for final aggregation.
+    - `hive/` - Hive script for processing MapReduce outputs and integrating with additional datasets.
+        - `query.hql` - Hive query designed for GCP-based clusters.
+    - `airflow/` - Apache Airflow DAG to automate workflow execution.
 - **docker/** - Docker-related files for local testing.
-  - `Dockerfile` - Builds an environment to test MapReduce locally using Hadoop Streaming.
+    - `Dockerfile` - Builds an environment to test MapReduce locally using Hadoop Streaming.
 - **README.md** - This file, explaining the project structure and usage.
 - **.gitignore** - Defines files and directories to ignore in the Git repository.
 
@@ -35,33 +81,33 @@ The instructions below assume that the environment is either Linux-based or a Do
 
 ### Local Testing (MapReduce Only)
 1. **Prepare input data**:
-   - Place your data files in a directory, e.g., `input_folder`.
+    - Place your data files in a directory, e.g., `input_folder`.
 2. **Run the MapReduce pipeline**:
-   - Use the following shell command:
-     ```bash
-     cat input_folder | path_to_mapper | path_to_combiner | sort | path_to_reducer > output.tsv
-     ```
-   - If you're using Windows, run this command inside a Docker container with a Linux environment.
-  
+    - Use the following shell command:
+      ```bash
+      cat input_folder | path_to_mapper | path_to_combiner | sort | path_to_reducer > output.tsv
+      ```
+    - If you're using Windows, run this command inside a Docker container with a Linux environment.
+
    This command allows testing of the MapReduce logic in a Unix-like environment, using standard input/output redirection.
 3. **Check results**:
-   - The output will be written to `output.tsv`.
+    - The output will be written to `output.tsv`.
 
 ### GCP Deployment
 1. **Prepare Data**:
-   - Upload datasets to the GCP storage bucket (`gs://`).
-   - Ensure datasets are structured as:
-     - `project/input/dataset1` - For MapReduce.
-     - `project/input/dataset2` - For Hive.
+    - Upload datasets to the GCP storage bucket (`gs://`).
+    - Ensure datasets are structured as:
+        - `project/input/dataset1` - For MapReduce.
+        - `project/input/dataset2` - For Hive.
 
 2. **Run MapReduce**:
-   - Submit the MapReduce job to the Hadoop cluster on GCP.
+    - Submit the MapReduce job to the Hadoop cluster on GCP.
 
 3. **Run Hive Query**:
-   - Execute the Hive script on the GCP-based Hive cluster.
+    - Execute the Hive script on the GCP-based Hive cluster.
 
 4. **Automate with Airflow**:
-   - Configure and deploy the Airflow DAG to orchestrate the workflow.
+    - Configure and deploy the Airflow DAG to orchestrate the workflow.
 
 ## Notes
 - It is recommended to use small datasets locally for testing MapReduce before deploying to GCP for large-scale processing.
